@@ -20,11 +20,13 @@ namespace lab01_code
             public string EngineInfo { get; set; }
             public string WheelInfo { get; set; }
         }
-        abstract class BaseFactory {
+        abstract class BaseFactory
+        {
             public abstract BaseEngine createEngine();
             public abstract BaseWheel createWheel();
         }
-        abstract class BaseEngine {
+        abstract class BaseEngine
+        {
             public abstract string Name { get; }
             public abstract string Specs { get; }
         }
@@ -40,26 +42,26 @@ namespace lab01_code
             {
                 return new HondaEngine();
             }
-            public override BaseWheel createWheel() 
+            public override BaseWheel createWheel()
             {
                 return new HondaWheel();
             }
         }
-        
+
         class ToyotaFactory : BaseFactory
         {
-            public override BaseEngine createEngine() 
+            public override BaseEngine createEngine()
             {
                 return new ToyotaEngine();
             }
-            public override BaseWheel createWheel() 
+            public override BaseWheel createWheel()
             {
                 return new ToyotaWheel();
             }
         }
         class ToyotaEngine : BaseEngine
         {
-            
+
             public override string Name => "abobaAT";
             public override string Specs => "bbobaAT";
         }
@@ -72,7 +74,7 @@ namespace lab01_code
 
         class ToyotaWheel : BaseWheel
         {
-            
+
             public override string Name => "abobaBT";
             public override string Specs => "bbobaBT";
         }
@@ -120,7 +122,7 @@ namespace lab01_code
             var wheel = factory.createWheel();
 
             partsList.Add(new CarPartsRow { EngineInfo = engine.Name, WheelInfo = wheel.Name });
-            partsList.Add(new CarPartsRow{ EngineInfo = engine.Specs, WheelInfo= wheel.Specs });
+            partsList.Add(new CarPartsRow { EngineInfo = engine.Specs, WheelInfo = wheel.Specs });
         }
 
         private void button1_Click(object sender, EventArgs e)
