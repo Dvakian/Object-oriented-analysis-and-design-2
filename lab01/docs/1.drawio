@@ -137,7 +137,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="_BMMorQGfT13z0I8DE2R" name="Страница-2">
-    <mxGraphModel dx="1826" dy="41" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1548" dy="-127" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -194,7 +194,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="al1m14FesEzUXzqVp9Qw-8" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-weight: 400; text-align: left;&quot;&gt;HondaEngine&lt;/span&gt;" vertex="1">
+        <mxCell id="al1m14FesEzUXzqVp9Qw-8" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=27;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-weight: 400; text-align: left;&quot;&gt;HondaEngine&lt;/span&gt;" vertex="1">
           <mxGeometry height="27" width="160" x="10" y="1405.5" as="geometry" />
         </mxCell>
         <mxCell id="o0DtunrLrF0P4up_eTOS-3" edge="1" parent="1" source="al1m14FesEzUXzqVp9Qw-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endSize=8;endArrow=block;endFill=0;" target="4oG1edR_Dj5a9RdQ1NLJ-6">
@@ -260,7 +260,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="2gpC_t9FOqHv_Y4miOIa-4" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-weight: 400; text-align: left;&quot;&gt;ToyotaEngine&lt;/span&gt;" vertex="1">
+        <mxCell id="2gpC_t9FOqHv_Y4miOIa-4" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=27;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="&lt;span style=&quot;font-weight: 400; text-align: left;&quot;&gt;ToyotaEngine&lt;/span&gt;" vertex="1">
           <mxGeometry height="27" width="160" x="900" y="1405.5" as="geometry" />
         </mxCell>
         <mxCell id="o0DtunrLrF0P4up_eTOS-4" edge="1" parent="1" source="2gpC_t9FOqHv_Y4miOIa-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endSize=8;endArrow=block;endFill=0;" target="4oG1edR_Dj5a9RdQ1NLJ-6">
