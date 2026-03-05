@@ -20,23 +20,23 @@ namespace lab01_code
             public string EngineInfo { get; set; }
             public string WheelInfo { get; set; }
         }
-        abstract class BaseFactory
+        public abstract class BaseFactory
         {
             public abstract BaseEngine createEngine();
             public abstract BaseWheel createWheel();
         }
-        abstract class BaseEngine
+        public abstract class BaseEngine
         {
             public abstract string Name { get; }
             public abstract string Specs { get; }
         }
-        abstract class BaseWheel
+        public abstract class BaseWheel
         {
             public abstract string Name { get; }
             public abstract string Specs { get; }
         }
 
-        class HondaFactory : BaseFactory
+        public class HondaFactory : BaseFactory
         {
             public override BaseEngine createEngine()
             {
@@ -48,7 +48,7 @@ namespace lab01_code
             }
         }
 
-        class ToyotaFactory : BaseFactory
+        public class ToyotaFactory : BaseFactory
         {
             public override BaseEngine createEngine()
             {
@@ -59,30 +59,30 @@ namespace lab01_code
                 return new ToyotaWheel();
             }
         }
-        class ToyotaEngine : BaseEngine
+        public class ToyotaEngine : BaseEngine
         {
 
-            public override string Name => "abobaAT";
-            public override string Specs => "bbobaAT";
+            public override string Name => "3S-FE";
+            public override string Specs => "2.0L, 4-cyl, 140hp";
         }
 
-        class HondaEngine : BaseEngine
+        public class HondaEngine : BaseEngine
         {
-            public override string Name => "abobaAH";
-            public override string Specs => "bbobaAH";
+            public override string Name => "F20C";
+            public override string Specs => "2.0L, 4-cyl, 250hp";
         }
 
-        class ToyotaWheel : BaseWheel
+        public class ToyotaWheel : BaseWheel
         {
 
-            public override string Name => "abobaBT";
-            public override string Specs => "bbobaBT";
+            public override string Name => "Toyota Alloy Wheel";
+            public override string Specs => "16-inch, summer";
         }
 
-        class HondaWheel : BaseWheel
+        public class HondaWheel : BaseWheel
         {
-            public override string Name => "abobaBH";
-            public override string Specs => "bbobaBH";
+            public override string Name => "Honda Steel Wheel";
+            public override string Specs => "15-inch, all-season";
         }
         public Form1()
         {
