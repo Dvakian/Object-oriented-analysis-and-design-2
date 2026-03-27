@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\akzak\\Desktop\\TSU\\\u041E\u041E\u0410\u041F\\lab02\\lab02_code_without_pattern\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{AA269501-D7A1-4575-AE14-B22F5E9D9573}|lab02_code.vcxproj|C:\\Users\\akzak\\Desktop\\TSU\\\u041E\u041E\u0410\u041F\\lab02\\lab02_code_without_pattern\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{AA269501-D7A1-4575-AE14-B22F5E9D9573}|lab02_code.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "main.cpp",
+              "DocumentMoniker": "C:\\Users\\akzak\\Desktop\\TSU\\\u041E\u041E\u0410\u041F\\lab02\\lab02_code_without_pattern\\main.cpp",
+              "RelativeDocumentMoniker": "main.cpp",
+              "ToolTip": "C:\\Users\\akzak\\Desktop\\TSU\\\u041E\u041E\u0410\u041F\\lab02\\lab02_code_without_pattern\\main.cpp",
+              "RelativeToolTip": "main.cpp",
+              "ViewState": "AgIAABoBAAAAAAAAAAAAADYBAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-03-13T05:58:18.996Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

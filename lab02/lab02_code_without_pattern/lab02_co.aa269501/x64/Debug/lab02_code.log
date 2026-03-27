@@ -1,0 +1,6 @@
+﻿  main.cpp
+C:\Users\akzak\Desktop\TSU\ООАП\lab02\lab02_code_without_pattern\main.cpp(137,22): warning C4244: *=: преобразование "double" в "float", возможна потеря данных
+C:\Users\akzak\Desktop\TSU\ООАП\lab02\lab02_code_without_pattern\main.cpp(138,22): warning C4244: *=: преобразование "double" в "float", возможна потеря данных
+C:\Users\akzak\Desktop\TSU\ООАП\lab02\lab02_code_without_pattern\main.cpp(151,22): warning C4244: *=: преобразование "double" в "float", возможна потеря данных
+C:\Users\akzak\Desktop\TSU\ООАП\lab02\lab02_code_without_pattern\main.cpp(152,22): warning C4244: *=: преобразование "double" в "float", возможна потеря данных
+  lab02_code.vcxproj -> C:\Users\akzak\Desktop\TSU\ООАП\lab02\lab02_code_without_pattern\x64\Debug\lab02_code_without_pattern.exe
