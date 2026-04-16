@@ -1,1 +1,4 @@
 .$*.drawio.bkp
+.$*.drawio.dtmp
+__pycache__/
+.venv/
