@@ -65,6 +65,9 @@ class Game:
             self.draw()
 
             for event in pg.event.get():
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_r:
+                        self.reset()
                 if event.type == pg.KEYDOWN and not self.end and not self.is_running:
                     if event.key == pg.K_LEFT:
                         self.steps.append(logic.Step(logic.LeftStep(self.player)))
@@ -77,9 +80,6 @@ class Game:
 
                     elif event.key == pg.K_UP:
                         self.steps.append(logic.Step(logic.TopStep(self.player)))
-
-                    elif event.key == pg.K_r:
-                        self.reset()
 
                     elif event.key == pg.K_SPACE:
                         self.is_running = True
@@ -94,7 +94,7 @@ class Game:
         if self.end:
             f1 = pg.font.Font(None, 36)
             text1 = f1.render("Конец", True, pg.Color("pink"))
-            self.sc.blit(text1, (364, 264))
+            self.sc.blit(text1, (800 / 2, 470 / 2 - 36))
 
         if self.dead:
             f1 = pg.font.Font(None, 36)

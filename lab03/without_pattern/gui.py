@@ -63,6 +63,9 @@ class Game:
             self.draw()
 
             for event in pg.event.get():
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_r:
+                        self.reset()
                 if event.type == pg.KEYDOWN and not self.end and not self.is_running:
                     if event.key == pg.K_LEFT:
                         self.steps.append(logic.Step(-1, 0))
@@ -75,9 +78,6 @@ class Game:
 
                     elif event.key == pg.K_UP:
                         self.steps.append(logic.Step(0, -1))
-
-                    elif event.key == pg.K_r:
-                        self.reset()
 
                     elif event.key == pg.K_SPACE:  #
                         self.is_running = True  #
