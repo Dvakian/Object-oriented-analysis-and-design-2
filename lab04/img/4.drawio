@@ -1,13 +1,13 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.6.1 Safari/537.36" version="29.5.2">
   <diagram name="Страница-1" id="ftaP6z_NAxaRGJumsQR7">
-    <mxGraphModel dx="1426" dy="841" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1240" dy="731" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="H-95CcCZPj8xjH4NvHvV-23" edge="1" parent="1" source="H-95CcCZPj8xjH4NvHvV-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endFill=0;startSize=8;dashed=1;" target="H-95CcCZPj8xjH4NvHvV-6">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="H-95CcCZPj8xjH4NvHvV-1" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="&lt;i&gt;Model&lt;/i&gt;" vertex="1">
+        <mxCell id="H-95CcCZPj8xjH4NvHvV-1" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="&lt;i&gt;FlightSimulatorApp&lt;/i&gt;" vertex="1">
           <mxGeometry height="112" width="160" x="270" y="350" as="geometry" />
         </mxCell>
         <mxCell id="H-95CcCZPj8xjH4NvHvV-2" parent="H-95CcCZPj8xjH4NvHvV-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ field: type" vertex="1">
@@ -80,7 +80,7 @@
         <mxCell id="H-95CcCZPj8xjH4NvHvV-21" edge="1" parent="1" source="H-95CcCZPj8xjH4NvHvV-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;startSize=8;" target="H-95CcCZPj8xjH4NvHvV-1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="H-95CcCZPj8xjH4NvHvV-13" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="kruto" vertex="1">
+        <mxCell id="H-95CcCZPj8xjH4NvHvV-13" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="ProFlight" vertex="1">
           <mxGeometry height="86" width="160" x="190" y="580" as="geometry" />
         </mxCell>
         <mxCell id="H-95CcCZPj8xjH4NvHvV-14" parent="H-95CcCZPj8xjH4NvHvV-13" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ field: type" vertex="1">
@@ -95,7 +95,7 @@
         <mxCell id="H-95CcCZPj8xjH4NvHvV-22" edge="1" parent="1" source="H-95CcCZPj8xjH4NvHvV-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;startSize=8;" target="H-95CcCZPj8xjH4NvHvV-1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="H-95CcCZPj8xjH4NvHvV-17" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="ne_kruto" vertex="1">
+        <mxCell id="H-95CcCZPj8xjH4NvHvV-17" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" value="FreeFlight" vertex="1">
           <mxGeometry height="86" width="160" x="370" y="580" as="geometry" />
         </mxCell>
         <mxCell id="H-95CcCZPj8xjH4NvHvV-18" parent="H-95CcCZPj8xjH4NvHvV-17" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ field: type" vertex="1">
