@@ -1,1 +1,2 @@
-Main.class
+core\EulerFlightPhysics.class
+core\RKFlightPhysics.class

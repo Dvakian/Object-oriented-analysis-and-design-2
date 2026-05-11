@@ -1,31 +1,41 @@
+package app;
+
+import DB.*;
+import auth.LoginWindow;
+import auth.UserSession;
+import core.*;
+import history.History;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.*;
 
-public abstract class FlightSimulatorApp extends JFrame {
+public class FlightSimulatorApp extends JFrame {
 
-    protected static final double G = 9.81;
+    private final Map<Double, SimulationSummary> resultsTable = new TreeMap<>();
 
-    protected final Map<Double, Result> resultsTable = new TreeMap<>();
+    private final FlightPhysics physics;
 
-    protected final JTextField v0Field = new JTextField("50");
-    protected final JTextField angleField = new JTextField("45");
-    protected final JTextField mField = new JTextField("1.0");
-    protected final JTextField kField = new JTextField("0.02");
-    protected final JTextField dtField = new JTextField("0.05");
+    private final JTextField v0Field = new JTextField("50");
+    private final JTextField y0Field = new JTextField("0");
+    private final JTextField angleField = new JTextField("45");
+    private final JTextField mField = new JTextField("1.0");
+    private final JTextField kField = new JTextField("0.02");
+    private final JTextField rho0Field = new JTextField("1.225");
+    private final JTextField HField = new JTextField("8500");
+    private final JTextField dtField = new JTextField("0.05");
 
-    protected final JTextArea resultText = new JTextArea(12, 34);
-    protected final PlotPanel plotPanel = new PlotPanel();
+    private final JTextArea resultText = new JTextArea(12, 34);
+    private final PlotPanel plotPanel = new PlotPanel();
 
-    protected javax.swing.Timer animationTimer;
-    protected boolean isAnimating = false;
+    private javax.swing.Timer animationTimer;
+    private boolean isAnimating = false;
 
-    public FlightSimulatorApp(String title) {
-        super(title);
+    public FlightSimulatorApp(FlightPhysics physics) {
+        super("Моделирование полёта тела в атмосфере");
+        this.physics = physics;
+
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         getContentPane().setBackground(new Color(245, 245, 245));
 
@@ -41,20 +51,12 @@ public abstract class FlightSimulatorApp extends JFrame {
 
         createInterface();
 
-        setSize(1200, 720);
+        setSize(1200, 800);
         setMinimumSize(new Dimension(1100, 650));
         setLocationRelativeTo(null);
     }
 
-    protected abstract String getVersionName();
-
-    protected abstract boolean supportsAnimation();
-
-    protected abstract boolean supportsMultipleSteps();
-
-    protected abstract boolean supportsCustomInput();
-
-    protected void createInterface() {
+    private void createInterface() {
         JPanel main = new JPanel(new BorderLayout(14, 14));
         main.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
         main.setBackground(new Color(245, 245, 245));
@@ -80,7 +82,7 @@ public abstract class FlightSimulatorApp extends JFrame {
         add(main);
     }
 
-    protected JPanel parametersPanel() {
+    private JPanel parametersPanel() {
         JPanel panel = cardPanel();
         panel.setLayout(new GridBagLayout());
 
@@ -91,29 +93,23 @@ public abstract class FlightSimulatorApp extends JFrame {
         c.gridy = 0;
         c.gridwidth = 2;
         c.insets = new Insets(0, 0, 12, 0);
-
         panel.add(titleLabel("Параметры моделирования"), c);
 
         addInput(panel, c, 1, "Начальная скорость (м/с):", v0Field);
-        addInput(panel, c, 2, "Угол бросания (град):", angleField);
-        addInput(panel, c, 3, "Масса тела (кг):", mField);
-        addInput(panel, c, 4, "Коэфф. сопротивления (k):", kField);
-        addInput(panel, c, 5, "Шаг моделирования (dt, с):", dtField);
-
-        if (!supportsCustomInput()) {
-            dtField.setText("1.0");
-
-            dtField.setEnabled(false);
-            mField.setEnabled(false);
-            kField.setEnabled(false);
-        }
+        addInput(panel, c, 2, "Начальная высота (м):", y0Field);
+        addInput(panel, c, 3, "Угол бросания (град):", angleField);
+        addInput(panel, c, 4, "Масса тела (кг):", mField);
+        addInput(panel, c, 5, "Коэфф. сопротивления (k):", kField);
+        addInput(panel, c, 6, "Плотность воздуха ρ0:", rho0Field);
+        addInput(panel, c, 7, "Масштаб атмосферы H:", HField);
+        addInput(panel, c, 8, "Шаг моделирования (dt, с):", dtField);
 
         return panel;
     }
 
-    protected JPanel buttonsPanel() {
+    private JPanel buttonsPanel() {
         JPanel panel = cardPanel();
-        panel.setLayout(new GridLayout(4, 1, 0, 10));
+        panel.setLayout(new GridLayout(5, 1, 0, 10));
 
         addStyledButton(
             panel,
@@ -143,10 +139,17 @@ public abstract class FlightSimulatorApp extends JFrame {
             this::clearPlot
         );
 
+        addStyledButton(
+            panel,
+            "История",
+            new Color(120, 90, 200),
+            this::openHistory
+        );
+
         return panel;
     }
 
-    protected JPanel resultsPanel() {
+    private JPanel resultsPanel() {
         JPanel panel = cardPanel();
         panel.setLayout(new BorderLayout(8, 8));
 
@@ -154,15 +157,16 @@ public abstract class FlightSimulatorApp extends JFrame {
 
         resultText.setFont(new Font("Consolas", Font.PLAIN, 13));
         resultText.setEditable(false);
-
         resultText.setMargin(new Insets(10, 10, 10, 10));
+
+        resultText.setText("Выбранный метод: " + physics.getName() + "\n");
 
         panel.add(new JScrollPane(resultText), BorderLayout.CENTER);
 
         return panel;
     }
 
-    protected void addInput(
+    private void addInput(
         JPanel panel,
         GridBagConstraints c,
         int row,
@@ -170,28 +174,26 @@ public abstract class FlightSimulatorApp extends JFrame {
         JTextField field
     ) {
         JLabel lbl = new JLabel(label);
-        lbl.setFont(new Font("Arial", Font.BOLD, 14));
+        lbl.setFont(new Font("Arial", Font.BOLD, 13));
 
-        field.setFont(new Font("Arial", Font.PLAIN, 15));
-        field.setMargin(new Insets(6, 8, 6, 8));
+        field.setFont(new Font("Arial", Font.PLAIN, 13));
+        field.setMargin(new Insets(3, 6, 3, 6));
 
         c.gridy = row;
         c.gridwidth = 1;
-        c.insets = new Insets(7, 0, 7, 12);
+        c.insets = new Insets(4, 0, 4, 8);
 
         c.gridx = 0;
         c.weightx = 0.65;
-
         panel.add(lbl, c);
 
         c.gridx = 1;
         c.weightx = 0.35;
-        c.insets = new Insets(7, 0, 7, 0);
-
+        c.insets = new Insets(4, 0, 4, 0);
         panel.add(field, c);
     }
 
-    protected void addStyledButton(
+    private void addStyledButton(
         JPanel parent,
         String text,
         Color bg,
@@ -201,10 +203,8 @@ public abstract class FlightSimulatorApp extends JFrame {
 
         button.setFont(new Font("Arial", Font.BOLD, 15));
         button.setFocusPainted(false);
-
         button.setBackground(bg);
         button.setForeground(Color.WHITE);
-
         button.setPreferredSize(new Dimension(300, 44));
 
         button.addActionListener(e -> action.run());
@@ -212,11 +212,10 @@ public abstract class FlightSimulatorApp extends JFrame {
         parent.add(button);
     }
 
-    protected JPanel cardPanel() {
+    private JPanel cardPanel() {
         JPanel panel = new JPanel();
 
         panel.setBackground(Color.WHITE);
-
         panel.setBorder(
             BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(220, 220, 220)),
@@ -227,135 +226,80 @@ public abstract class FlightSimulatorApp extends JFrame {
         return panel;
     }
 
-    protected JLabel titleLabel(String text) {
+    private JLabel titleLabel(String text) {
         JLabel label = new JLabel(text);
-
         label.setFont(new Font("Arial", Font.BOLD, 16));
-
         return label;
     }
 
-    protected Params getParams() {
+    private FlightParams getParams() {
         try {
-            return new Params(
+            return new FlightParams(
                 Double.parseDouble(v0Field.getText()),
+                Double.parseDouble(y0Field.getText()),
                 Double.parseDouble(angleField.getText()),
                 Double.parseDouble(mField.getText()),
                 Double.parseDouble(kField.getText()),
+                Double.parseDouble(rho0Field.getText()),
+                Double.parseDouble(HField.getText()),
                 Double.parseDouble(dtField.getText())
             );
         } catch (Exception e) {
             resultText.append("Ошибка ввода!\n");
-
             return null;
         }
     }
 
-    protected SimulationResult simulate(
-        double v0,
-        double angle,
-        double m,
-        double k,
-        double dt
-    ) {
-        double x = 0.0;
-        double y = 0.0;
+    private void calculate() {
+        FlightParams p = getParams();
+        if (p == null) return;
 
-        double rad = Math.toRadians(angle);
+        SimulationResult sim = physics.simulate(p);
 
-        double vx = v0 * Math.cos(rad);
-        double vy = v0 * Math.sin(rad);
-
-        List<Double> xs = new ArrayList<>();
-        List<Double> ys = new ArrayList<>();
-
-        xs.add(x);
-        ys.add(y);
-
-        double maxHeight = 0.0;
-
-        while (y >= 0) {
-            double xPrev = x;
-            double yPrev = y;
-
-            double v = Math.sqrt(vx * vx + vy * vy);
-
-            double ax = -(k / m) * v * vx;
-            double ay = -G - (k / m) * v * vy;
-
-            x += vx * dt;
-            y += vy * dt;
-
-            vx += ax * dt;
-            vy += ay * dt;
-
-            if (y < 0) {
-                double r = yPrev / (yPrev - y);
-
-                double xHit = xPrev + r * (x - xPrev);
-
-                xs.add(xHit);
-                ys.add(0.0);
-
-                x = xHit;
-                y = 0.0;
-
-                break;
-            }
-
-            xs.add(x);
-            ys.add(y);
-
-            maxHeight = Math.max(maxHeight, y);
-        }
-
-        double finalSpeed = Math.sqrt(vx * vx + vy * vy);
-
-        return new SimulationResult(xs, ys, x, maxHeight, finalSpeed);
+        updatePlot(sim, p.dt);
     }
 
-    protected void calculate() {
-        Params p = getParams();
+    private void updatePlot(SimulationResult sim, double dt) {
+        resultsTable.put(
+            dt,
+            new SimulationSummary(sim.distance, sim.maxHeight, sim.finalSpeed)
+        );
 
-        if (p == null) {
-            return;
-        }
+        FlightParams p = getParams();
 
-        double dt = supportsCustomInput() ? p.dt : 1.0;
-
-        SimulationResult sim = simulate(p.v0, p.angle, p.m, p.k, dt);
-
-        updatePlot(sim, dt);
-    }
-
-    protected void animate() {
-        if (!supportsAnimation()) {
-            JOptionPane.showMessageDialog(
-                this,
-                "Анимация доступна только в полной версии.",
-                "Ограничение бесплатной версии",
-                JOptionPane.INFORMATION_MESSAGE
+        if (p != null && UserSession.getLogin() != null) {
+            SimulationService.save(
+                UserSession.getLogin(),
+                physics.getName(),
+                p.v0,
+                p.y0,
+                p.angle,
+                p.m,
+                p.k,
+                p.rho0,
+                p.H,
+                dt,
+                sim.distance,
+                sim.maxHeight,
+                sim.finalSpeed
             );
-
-            return;
         }
 
-        if (isAnimating) {
-            return;
-        }
+        plotPanel.addTrajectory(sim.xs, sim.ys, "dt=" + dt);
+        showTable();
+    }
 
-        Params p = getParams();
+    private void animate() {
+        if (isAnimating) return;
 
-        if (p == null) {
-            return;
-        }
+        FlightParams p = getParams();
+        if (p == null) return;
 
         isAnimating = true;
 
-        SimulationResult sim = simulate(p.v0, p.angle, p.m, p.k, p.dt);
+        SimulationResult sim = physics.simulate(p);
 
         plotPanel.clear();
-
         plotPanel.setAnimationData(sim.xs, sim.ys, sim.distance, sim.maxHeight);
 
         final int[] frame = { 0 };
@@ -363,7 +307,6 @@ public abstract class FlightSimulatorApp extends JFrame {
         animationTimer = new javax.swing.Timer(50, e -> {
             if (frame[0] < sim.xs.size()) {
                 plotPanel.setAnimationFrame(frame[0]);
-
                 frame[0]++;
             } else {
                 frame[0] = 0;
@@ -373,9 +316,145 @@ public abstract class FlightSimulatorApp extends JFrame {
         animationTimer.start();
     }
 
-    protected static class PlotPanel extends JPanel {
+    private void runAllSteps() {
+        FlightParams p = getParams();
+        if (p == null) return;
 
-        private final List<Trajectory> trajectories = new ArrayList<>();
+        resultsTable.clear();
+        clearPlot();
+
+        double[] steps = { 1, 0.1, 0.01, 0.001, 0.0001 };
+
+        for (double dt : steps) {
+            FlightParams stepParams = new FlightParams(
+                p.v0,
+                p.y0,
+                p.angle,
+                p.m,
+                p.k,
+                p.rho0,
+                p.H,
+                dt
+            );
+
+            SimulationResult sim = physics.simulate(stepParams);
+
+            updatePlot(sim, dt);
+        }
+
+        showTable();
+    }
+
+    private void clearPlot() {
+        if (animationTimer != null) {
+            animationTimer.stop();
+            animationTimer = null;
+        }
+
+        isAnimating = false;
+        plotPanel.clear();
+        resultText.setText("");
+        resultText.append("Выбранный метод: " + physics.getName() + "\n");
+    }
+
+    private void openHistory() {
+        String login = UserSession.getLogin();
+
+        if (login == null) {
+            JOptionPane.showMessageDialog(
+                this,
+                "История доступна только после входа в аккаунт."
+            );
+            return;
+        }
+
+        History history = new History(login, this);
+        history.setVisible(true);
+    }
+
+    public void importParamsFromHistory(
+        double v0,
+        double y0,
+        double angle,
+        double mass,
+        double k,
+        double rho0,
+        double H,
+        double dt
+    ) {
+        v0Field.setText(String.valueOf(v0));
+        y0Field.setText(String.valueOf(y0));
+        angleField.setText(String.valueOf(angle));
+        mField.setText(String.valueOf(mass));
+        kField.setText(String.valueOf(k));
+        rho0Field.setText(String.valueOf(rho0));
+        HField.setText(String.valueOf(H));
+        dtField.setText(String.valueOf(dt));
+    }
+
+    private void showTable() {
+        resultText.setText("");
+        resultText.append("Выбранный метод: " + physics.getName() + "\n\n");
+
+        if (resultsTable.isEmpty()) return;
+
+        resultText.append(String.format("%-18s", "Time step (dt)"));
+
+        for (double dt : resultsTable.keySet()) {
+            resultText.append(String.format("%12.4f", dt));
+        }
+
+        resultText.append("\n");
+
+        appendMetric("Distance (m)", "distance");
+        appendMetric("Max height (m)", "height");
+        appendMetric("Speed (m/s)", "speed");
+    }
+
+    private void appendMetric(String title, String key) {
+        resultText.append(String.format("%-18s", title));
+
+        for (SimulationSummary r : resultsTable.values()) {
+            double value = switch (key) {
+                case "distance" -> r.distance;
+                case "height" -> r.maxHeight;
+                case "speed" -> r.finalSpeed;
+                default -> 0;
+            };
+
+            resultText.append(String.format("%12.2f", value));
+        }
+
+        resultText.append("\n");
+    }
+
+    private void printTable() {
+        if (resultsTable.isEmpty()) return;
+
+        System.out.println("Метод: " + physics.getName());
+        System.out.println("Результаты моделирования для разных шагов (dt):");
+
+        for (Map.Entry<
+            Double,
+            SimulationSummary
+        > entry : resultsTable.entrySet()) {
+            double dt = entry.getKey();
+            SimulationSummary r = entry.getValue();
+
+            System.out.printf(
+                "dt = %.4f | Дальность = %.2f м | Макс. высота = %.2f м | Конечная скорость = %.2f м/с%n",
+                dt,
+                r.distance,
+                r.maxHeight,
+                r.finalSpeed
+            );
+        }
+    }
+
+    static class PlotPanel extends JPanel {
+
+        private final java.util.List<Trajectory> trajectories =
+            new java.util.ArrayList<>();
 
         private final Color[] colors = {
             new Color(0, 90, 255),
@@ -385,8 +464,8 @@ public abstract class FlightSimulatorApp extends JFrame {
             new Color(240, 150, 20),
         };
 
-        private List<Double> animXs;
-        private List<Double> animYs;
+        private java.util.List<Double> animXs;
+        private java.util.List<Double> animYs;
         private int animFrame = -1;
 
         private double maxX = 50;
@@ -397,15 +476,19 @@ public abstract class FlightSimulatorApp extends JFrame {
             setPreferredSize(new Dimension(780, 620));
         }
 
-        void addTrajectory(List<Double> xs, List<Double> ys, String label) {
+        void addTrajectory(
+            java.util.List<Double> xs,
+            java.util.List<Double> ys,
+            String label
+        ) {
             trajectories.add(new Trajectory(xs, ys, label));
             updateBounds(xs, ys);
             repaint();
         }
 
         void setAnimationData(
-            List<Double> xs,
-            List<Double> ys,
+            java.util.List<Double> xs,
+            java.util.List<Double> ys,
             double distance,
             double maxHeight
         ) {
@@ -426,19 +509,18 @@ public abstract class FlightSimulatorApp extends JFrame {
 
         void clear() {
             trajectories.clear();
-
             animXs = null;
             animYs = null;
-
             animFrame = -1;
-
             maxX = 50;
             maxY = 50;
-
             repaint();
         }
 
-        private void updateBounds(List<Double> xs, List<Double> ys) {
+        private void updateBounds(
+            java.util.List<Double> xs,
+            java.util.List<Double> ys
+        ) {
             for (double x : xs) {
                 maxX = Math.max(maxX, x + 10);
             }
@@ -548,14 +630,11 @@ public abstract class FlightSimulatorApp extends JFrame {
             }
 
             g2.setStroke(new BasicStroke(1f));
-
             drawLegend(g2, left + plotW - 130, top + 15);
         }
 
         private void drawLegend(Graphics2D g2, int x, int y) {
-            if (trajectories.isEmpty()) {
-                return;
-            }
+            if (trajectories.isEmpty()) return;
 
             int height = trajectories.size() * 24 + 14;
 
@@ -580,8 +659,8 @@ public abstract class FlightSimulatorApp extends JFrame {
 
         private void drawTrajectory(
             Graphics2D g2,
-            List<Double> xs,
-            List<Double> ys,
+            java.util.List<Double> xs,
+            java.util.List<Double> ys,
             int count,
             int left,
             int top,
@@ -609,17 +688,20 @@ public abstract class FlightSimulatorApp extends JFrame {
 
         private void drawCentered(Graphics2D g2, String text, int x, int y) {
             FontMetrics fm = g2.getFontMetrics();
-
             g2.drawString(text, x - fm.stringWidth(text) / 2, y);
         }
 
         static class Trajectory {
 
-            List<Double> xs;
-            List<Double> ys;
+            java.util.List<Double> xs;
+            java.util.List<Double> ys;
             String label;
 
-            Trajectory(List<Double> xs, List<Double> ys, String label) {
+            Trajectory(
+                java.util.List<Double> xs,
+                java.util.List<Double> ys,
+                String label
+            ) {
                 this.xs = xs;
                 this.ys = ys;
                 this.label = label;
@@ -627,159 +709,23 @@ public abstract class FlightSimulatorApp extends JFrame {
         }
     }
 
-    protected void runAllSteps() {
-        if (!supportsMultipleSteps()) {
-            JOptionPane.showMessageDialog(
-                this,
-                "Запуск всех шагов доступен только в полной версии.",
-                "Ограничение бесплатной версии",
-                JOptionPane.INFORMATION_MESSAGE
-            );
+    // public static void main(String[] args) {
+    //     SwingUtilities.invokeLater(() -> {
+    //         String method = args.length > 0 ? args[0] : "euler";
 
-            return;
-        }
+    //         FlightPhysics physics = FlightPhysicsPlugin.getPlugin(method);
 
-        Params p = getParams();
+    //         FlightSimulatorApp app = new FlightSimulatorApp(physics);
+    //         app.setVisible(true);
+    //     });
+    // }
 
-        if (p == null) {
-            return;
-        }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            DatabaseManager.initDatabase();
 
-        clearPlot();
-
-        double[] steps = { 1, 0.1, 0.01, 0.001, 0.0001 };
-
-        for (double dt : steps) {
-            SimulationResult sim = simulate(p.v0, p.angle, p.m, p.k, dt);
-
-            resultsTable.put(
-                dt,
-                new Result(sim.distance, sim.maxHeight, sim.finalSpeed)
-            );
-
-            plotPanel.addTrajectory(sim.xs, sim.ys, "dt=" + dt);
-        }
-
-        showTable();
-    }
-
-    protected void updatePlot(SimulationResult sim, double dt) {
-        resultsTable.put(
-            dt,
-            new Result(sim.distance, sim.maxHeight, sim.finalSpeed)
-        );
-
-        plotPanel.addTrajectory(sim.xs, sim.ys, "dt=" + dt);
-
-        showTable();
-    }
-
-    protected void clearPlot() {
-        if (animationTimer != null) {
-            animationTimer.stop();
-            animationTimer = null;
-        }
-
-        isAnimating = false;
-
-        resultsTable.clear();
-
-        plotPanel.clear();
-
-        resultText.setText("");
-    }
-
-    protected void showTable() {
-        resultText.setText("");
-
-        resultText.append("Версия приложения: " + getVersionName() + "\n\n");
-
-        if (resultsTable.isEmpty()) {
-            return;
-        }
-
-        resultText.append(String.format("%-18s", "Time step (dt)"));
-
-        for (double dt : resultsTable.keySet()) {
-            resultText.append(String.format("%12.4f", dt));
-        }
-
-        resultText.append("\n");
-
-        appendMetric("Distance (m)", "distance");
-        appendMetric("Max height (m)", "height");
-        appendMetric("Speed (m/s)", "speed");
-    }
-
-    protected void appendMetric(String title, String key) {
-        resultText.append(String.format("%-18s", title));
-
-        for (Result r : resultsTable.values()) {
-            double value = switch (key) {
-                case "distance" -> r.distance;
-                case "height" -> r.maxHeight;
-                case "speed" -> r.finalSpeed;
-                default -> 0;
-            };
-
-            resultText.append(String.format("%12.2f", value));
-        }
-
-        resultText.append("\n");
-    }
-
-    protected static class Params {
-
-        double v0;
-        double angle;
-        double m;
-        double k;
-        double dt;
-
-        Params(double v0, double angle, double m, double k, double dt) {
-            this.v0 = v0;
-            this.angle = angle;
-            this.m = m;
-            this.k = k;
-            this.dt = dt;
-        }
-    }
-
-    protected static class Result {
-
-        double distance;
-        double maxHeight;
-        double finalSpeed;
-
-        Result(double distance, double maxHeight, double finalSpeed) {
-            this.distance = distance;
-            this.maxHeight = maxHeight;
-            this.finalSpeed = finalSpeed;
-        }
-    }
-
-    protected static class SimulationResult {
-
-        List<Double> xs;
-        List<Double> ys;
-
-        double distance;
-        double maxHeight;
-        double finalSpeed;
-
-        SimulationResult(
-            List<Double> xs,
-            List<Double> ys,
-            double distance,
-            double maxHeight,
-            double finalSpeed
-        ) {
-            this.xs = xs;
-            this.ys = ys;
-
-            this.distance = distance;
-            this.maxHeight = maxHeight;
-            this.finalSpeed = finalSpeed;
-        }
+            LoginWindow loginWindow = new LoginWindow();
+            loginWindow.setVisible(true);
+        });
     }
 }

@@ -1,1 +1,5 @@
 .$*.drawio.bkp
+.$*.drawio.*
+*copy*
+*no*
+.target/

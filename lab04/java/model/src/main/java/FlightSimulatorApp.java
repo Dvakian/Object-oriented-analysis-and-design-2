@@ -386,24 +386,24 @@ public class FlightSimulatorApp extends JFrame {
         resultText.append("\n");
     }
 
-    private void printTable() {
-        if (resultsTable.isEmpty()) return;
+    // private void printTable() {
+    //     if (resultsTable.isEmpty()) return;
 
-        System.out.println("Результаты моделирования для разных шагов (dt):");
+    //     System.out.println("Результаты моделирования для разных шагов (dt):");
 
-        for (Map.Entry<Double, Result> entry : resultsTable.entrySet()) {
-            double dt = entry.getKey();
-            Result r = entry.getValue();
+    //     for (Map.Entry<Double, Result> entry : resultsTable.entrySet()) {
+    //         double dt = entry.getKey();
+    //         Result r = entry.getValue();
 
-            System.out.printf(
-                "dt = %.4f | Дальность = %.2f м | Макс. высота = %.2f м | Конечная скорость = %.2f м/с%n",
-                dt,
-                r.distance,
-                r.maxHeight,
-                r.finalSpeed
-            );
-        }
-    }
+    //         System.out.printf(
+    //             "dt = %.4f | Дальность = %.2f м | Макс. высота = %.2f м | Конечная скорость = %.2f м/с%n",
+    //             dt,
+    //             r.distance,
+    //             r.maxHeight,
+    //             r.finalSpeed
+    //         );
+    //     }
+    // }
 
     static class Params {
 
