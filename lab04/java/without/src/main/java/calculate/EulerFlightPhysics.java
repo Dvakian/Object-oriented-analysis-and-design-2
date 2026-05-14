@@ -1,15 +1,16 @@
-package core;
+package calculate;
 
+import core.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RKFlightPhysics extends FlightPhysics {
+public class EulerFlightPhysics extends FlightPhysics {
 
     private static final double G = 9.81;
 
     @Override
     public String getName() {
-        return "Метод Рунге-Кутта 2-го порядка";
+        return "Метод Эйлера";
     }
 
     @Override
@@ -37,29 +38,16 @@ public class RKFlightPhysics extends FlightPhysics {
 
             double rho = p.rho0 * Math.exp(-y / p.H);
 
-            double drag = ((p.k * rho) / p.rho0) / p.m;
+            double drag = (p.k * (rho / p.rho0)) / p.m;
 
             double ax = -drag * v * vx;
             double ay = -G - drag * v * vy;
 
-            double vxMid = vx + (ax * p.dt) / 2.0;
-            double vyMid = vy + (ay * p.dt) / 2.0;
+            x += vx * p.dt;
+            y += vy * p.dt;
 
-            double yMid = y + (vy * p.dt) / 2.0;
-
-            double rhoMid = p.rho0 * Math.exp(-yMid / p.H);
-            double dragMid = ((p.k * rhoMid) / p.rho0) / p.m;
-
-            double vMid = Math.sqrt(vxMid * vxMid + vyMid * vyMid);
-
-            double axMid = -dragMid * vMid * vxMid;
-            double ayMid = -G - dragMid * vMid * vyMid;
-
-            x += vxMid * p.dt;
-            y += vyMid * p.dt;
-
-            vx += axMid * p.dt;
-            vy += ayMid * p.dt;
+            vx += ax * p.dt;
+            vy += ay * p.dt;
 
             if (y < 0) {
                 double r = yPrev / (yPrev - y);

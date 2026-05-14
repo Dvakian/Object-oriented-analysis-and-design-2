@@ -123,12 +123,16 @@ public class LoginWindow extends JFrame {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                boolean isPro = rs.getInt("is_pro") == 1;
+                int accessLevel = rs.getInt("is_pro");
 
                 UserSession.setLogin(login);
-                UserSession.setPro(isPro);
+                UserSession.setAccessLevel(accessLevel);
 
-                String method = isPro ? "rk" : "euler";
+                String method = switch (accessLevel) {
+                    case 1 -> "rk";
+                    case 2 -> "super";
+                    default -> "aboba";
+                };
 
                 FlightPhysics physics = FlightPhysicsPlugin.getPlugin(method);
 

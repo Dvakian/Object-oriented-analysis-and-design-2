@@ -3,7 +3,7 @@ package auth;
 public class UserSession {
 
     private static String login;
-    private static boolean pro;
+    private static int accessLevel;
 
     public static void setLogin(String userLogin) {
         login = userLogin;
@@ -13,11 +13,11 @@ public class UserSession {
         return login;
     }
 
-    public static void setPro(boolean isPro) {
-        pro = isPro;
+    public static void setAccessLevel(int level) {
+        accessLevel = level;
     }
 
-    public static boolean isPro() {
-        return pro;
+    public static int getAccessLevel() {
+        return accessLevel;
     }
 }

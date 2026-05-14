@@ -42,7 +42,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.6.3</version>
                 <configuration>
-                    <mainClass>app.Main</mainClass>
+                    <mainClass>app.FlightSimulatorApp</mainClass>
                     <cleanupDaemonThreads>false</cleanupDaemonThreads>
                     <classpathScope>compile</classpathScope>
                 </configuration>

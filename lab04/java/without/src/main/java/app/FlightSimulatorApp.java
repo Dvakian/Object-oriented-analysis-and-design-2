@@ -1,18 +1,19 @@
 package app;
 
 import DB.*;
+import auth.LoginWindow;
+import auth.UserSession;
 import core.*;
+import history.History;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.ResultSet;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 
 public class FlightSimulatorApp extends JFrame {
 
-    private final Map<Double, SimulationResult> resultsTable = new TreeMap<>();
+    private final Map<Double, SimulationSummary> resultsTable = new TreeMap<>();
 
     private final FlightPhysics physics;
 
@@ -259,12 +260,16 @@ public class FlightSimulatorApp extends JFrame {
     }
 
     private void updatePlot(SimulationResult sim, double dt) {
-        resultsTable.put(dt, sim);
+        resultsTable.put(
+            dt,
+            new SimulationSummary(sim.distance, sim.maxHeight, sim.finalSpeed)
+        );
 
         FlightParams p = getParams();
 
-        if (p != null) {
-            DatabaseManager.saveSimulation(
+        if (p != null && UserSession.getLogin() != null) {
+            SimulationService.save(
+                UserSession.getLogin(),
                 physics.getName(),
                 p.v0,
                 p.y0,
@@ -278,10 +283,10 @@ public class FlightSimulatorApp extends JFrame {
                 sim.maxHeight,
                 sim.finalSpeed
             );
-
-            plotPanel.addTrajectory(sim.xs, sim.ys, "dt=" + dt);
-            showTable();
         }
+
+        plotPanel.addTrajectory(sim.xs, sim.ys, "dt=" + dt);
+        showTable();
     }
 
     private void animate() {
@@ -346,249 +351,25 @@ public class FlightSimulatorApp extends JFrame {
             animationTimer = null;
         }
 
-        resultsTable.clear();
         isAnimating = false;
         plotPanel.clear();
-
         resultText.setText("");
         resultText.append("Выбранный метод: " + physics.getName() + "\n");
     }
 
     private void openHistory() {
-        JFrame historyFrame = new JFrame("История моделирований");
+        String login = UserSession.getLogin();
 
-        historyFrame.setSize(1280, 620);
-        historyFrame.setMinimumSize(new Dimension(1100, 500));
-        historyFrame.setLocationRelativeTo(this);
-
-        JPanel main = new JPanel(new BorderLayout(14, 14));
-        main.setBackground(new Color(245, 245, 245));
-        main.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
-
-        historyFrame.setContentPane(main);
-
-        JPanel tableCard = cardPanel();
-        tableCard.setLayout(new BorderLayout(12, 12));
-
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setOpaque(false);
-
-        JLabel title = new JLabel("История моделирований");
-        title.setFont(new Font("Arial", Font.BOLD, 22));
-
-        JLabel hint = new JLabel(
-            "Выберите строку и нажмите «Импортировать параметры»"
-        );
-        hint.setFont(new Font("Arial", Font.PLAIN, 14));
-        hint.setForeground(new Color(90, 90, 90));
-
-        JPanel titleBox = new JPanel(new GridLayout(2, 1));
-        titleBox.setOpaque(false);
-
-        titleBox.add(title);
-        titleBox.add(hint);
-
-        topPanel.add(titleBox, BorderLayout.WEST);
-
-        tableCard.add(topPanel, BorderLayout.NORTH);
-
-        DefaultTableModel tableModel = new DefaultTableModel(
-            new String[] {
-                "Дата",
-                "Версия",
-                "v0",
-                "y0",
-                "Угол",
-                "Масса",
-                "k",
-                "rho0",
-                "H",
-                "dt",
-                "Дальность",
-                "Высота",
-                "Скорость",
-            },
-            0
-        ) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        JTable table = new JTable(tableModel);
-
-        loadHistoryToTable(tableModel);
-
-        table.setRowHeight(32);
-        table.setFont(new Font("Arial", Font.PLAIN, 14));
-
-        table.setSelectionBackground(new Color(210, 225, 255));
-        table.setSelectionForeground(Color.BLACK);
-
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(235, 235, 235));
-
-        table.setGridColor(new Color(225, 225, 225));
-
-        JScrollPane scrollPane = new JScrollPane(table);
-
-        scrollPane.setBorder(
-            BorderFactory.createLineBorder(new Color(220, 220, 220))
-        );
-
-        tableCard.add(scrollPane, BorderLayout.CENTER);
-
-        JPanel buttonsPanel = new JPanel(
-            new FlowLayout(FlowLayout.RIGHT, 12, 0)
-        );
-
-        buttonsPanel.setOpaque(false);
-
-        JButton importButton = createHistoryButton(
-            "Импортировать",
-            new Color(35, 150, 80)
-        );
-
-        importButton.addActionListener(e ->
-            importSelectedHistoryRow(table, tableModel, historyFrame)
-        );
-
-        JButton clearButton = createHistoryButton(
-            "Очистить",
-            new Color(185, 65, 65)
-        );
-
-        clearButton.addActionListener(e -> {
-            boolean confirm = showStyledConfirm(
-                historyFrame,
-                "Подтверждение",
-                "Удалить всю историю моделирований?"
-            );
-
-            if (!confirm) return;
-
-            try {
-                DatabaseManager.clearHistory();
-
-                tableModel.setRowCount(0);
-
-                showStyledMessage(
-                    historyFrame,
-                    "Успех",
-                    "История успешно очищена."
-                );
-            } catch (Exception ex) {
-                ex.printStackTrace();
-
-                showStyledMessage(
-                    historyFrame,
-                    "Ошибка",
-                    "Ошибка очистки истории."
-                );
-            }
-        });
-
-        JButton closeButton = createHistoryButton(
-            "Закрыть",
-            new Color(120, 90, 200)
-        );
-
-        closeButton.addActionListener(e -> historyFrame.dispose());
-
-        buttonsPanel.add(importButton);
-        buttonsPanel.add(clearButton);
-        buttonsPanel.add(closeButton);
-
-        tableCard.add(buttonsPanel, BorderLayout.SOUTH);
-
-        main.add(tableCard, BorderLayout.CENTER);
-
-        historyFrame.setVisible(true);
-    }
-
-    private JButton createHistoryButton(String text, Color color) {
-        JButton button = new JButton(text);
-
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        button.setFocusPainted(false);
-
-        button.setBackground(color);
-        button.setForeground(Color.WHITE);
-
-        button.setPreferredSize(new Dimension(170, 42));
-
-        return button;
-    }
-
-    private void loadHistoryToTable(DefaultTableModel tableModel) {
-        try {
-            ResultSet rs = DatabaseManager.loadHistory();
-
-            while (rs.next()) {
-                tableModel.addRow(
-                    new Object[] {
-                        rs.getString("created_at"),
-                        rs.getString("version"),
-                        rs.getDouble("v0"),
-                        rs.getDouble("y0"),
-                        rs.getDouble("angle"),
-                        rs.getDouble("mass"),
-                        rs.getDouble("k"),
-                        rs.getDouble("rho0"),
-                        rs.getDouble("H"),
-                        rs.getDouble("dt"),
-                        rs.getDouble("distance"),
-                        rs.getDouble("max_height"),
-                        rs.getDouble("final_speed"),
-                    }
-                );
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            showStyledMessage(this, "Ошибка", "Ошибка загрузки истории.");
-        }
-    }
-
-    private void importSelectedHistoryRow(
-        JTable table,
-        DefaultTableModel tableModel,
-        JFrame historyFrame
-    ) {
-        int row = table.getSelectedRow();
-
-        if (row == -1) {
-            showStyledMessage(
-                historyFrame,
-                "Ошибка",
-                "Сначала выберите строку из истории."
+        if (login == null) {
+            JOptionPane.showMessageDialog(
+                this,
+                "История доступна только после входа в аккаунт."
             );
             return;
         }
 
-        double v0 = getDouble(tableModel, row, 2);
-        double y0 = getDouble(tableModel, row, 3);
-        double angle = getDouble(tableModel, row, 4);
-        double mass = getDouble(tableModel, row, 5);
-        double k = getDouble(tableModel, row, 6);
-        double rho0 = getDouble(tableModel, row, 7);
-        double H = getDouble(tableModel, row, 8);
-        double dt = getDouble(tableModel, row, 9);
-
-        importParamsFromHistory(v0, y0, angle, mass, k, rho0, H, dt);
-
-        showStyledMessage(historyFrame, "Успех", "Параметры импортированы");
-
-        historyFrame.dispose();
-    }
-
-    private double getDouble(
-        DefaultTableModel tableModel,
-        int row,
-        int column
-    ) {
-        Object value = tableModel.getValueAt(row, column);
-        return Double.parseDouble(value.toString());
+        History history = new History(login, this);
+        history.setVisible(true);
     }
 
     public void importParamsFromHistory(
@@ -633,7 +414,7 @@ public class FlightSimulatorApp extends JFrame {
     private void appendMetric(String title, String key) {
         resultText.append(String.format("%-18s", title));
 
-        for (SimulationResult r : resultsTable.values()) {
+        for (SimulationSummary r : resultsTable.values()) {
             double value = switch (key) {
                 case "distance" -> r.distance;
                 case "height" -> r.maxHeight;
@@ -647,130 +428,27 @@ public class FlightSimulatorApp extends JFrame {
         resultText.append("\n");
     }
 
-    private void showStyledMessage(
-        JFrame parent,
-        String title,
-        String message
-    ) {
-        JDialog dialog = new JDialog(parent, title, true);
+    private void printTable() {
+        if (resultsTable.isEmpty()) return;
 
-        dialog.setSize(420, 180);
-        dialog.setLocationRelativeTo(parent);
-        dialog.setResizable(false);
+        System.out.println("Метод: " + physics.getName());
+        System.out.println("Результаты моделирования для разных шагов (dt):");
 
-        JPanel main = new JPanel(new BorderLayout(16, 16));
+        for (Map.Entry<
+            Double,
+            SimulationSummary
+        > entry : resultsTable.entrySet()) {
+            double dt = entry.getKey();
+            SimulationSummary r = entry.getValue();
 
-        main.setBackground(new Color(245, 245, 245));
-
-        main.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        JLabel icon = new JLabel("i");
-        icon.setHorizontalAlignment(SwingConstants.CENTER);
-
-        icon.setFont(new Font("Arial", Font.BOLD, 28));
-
-        icon.setForeground(new Color(0, 105, 220));
-
-        icon.setPreferredSize(new Dimension(50, 50));
-
-        JLabel text = new JLabel(message);
-
-        text.setFont(new Font("Arial", Font.PLAIN, 16));
-
-        JPanel center = new JPanel(new BorderLayout(12, 12));
-
-        center.setOpaque(false);
-
-        center.add(icon, BorderLayout.WEST);
-        center.add(text, BorderLayout.CENTER);
-
-        JButton okButton = createHistoryButton("OK", new Color(0, 105, 220));
-
-        okButton.addActionListener(e -> dialog.dispose());
-
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.CENTER));
-
-        bottom.setOpaque(false);
-
-        bottom.add(okButton);
-
-        main.add(center, BorderLayout.CENTER);
-        main.add(bottom, BorderLayout.SOUTH);
-
-        dialog.setContentPane(main);
-
-        dialog.setVisible(true);
-    }
-
-    private boolean showStyledConfirm(
-        JFrame parent,
-        String title,
-        String message
-    ) {
-        JDialog dialog = new JDialog(parent, title, true);
-
-        dialog.setSize(460, 200);
-        dialog.setLocationRelativeTo(parent);
-        dialog.setResizable(false);
-
-        final boolean[] result = { false };
-
-        JPanel main = new JPanel(new BorderLayout(16, 16));
-
-        main.setBackground(new Color(245, 245, 245));
-
-        main.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        JLabel icon = new JLabel("?");
-
-        icon.setHorizontalAlignment(SwingConstants.CENTER);
-
-        icon.setFont(new Font("Arial", Font.BOLD, 30));
-
-        icon.setForeground(new Color(235, 150, 40));
-
-        icon.setPreferredSize(new Dimension(50, 50));
-
-        JLabel text = new JLabel(message);
-
-        text.setFont(new Font("Arial", Font.PLAIN, 16));
-
-        JPanel center = new JPanel(new BorderLayout(12, 12));
-
-        center.setOpaque(false);
-
-        center.add(icon, BorderLayout.WEST);
-        center.add(text, BorderLayout.CENTER);
-
-        JButton yesButton = createHistoryButton("Да", new Color(35, 150, 80));
-
-        JButton noButton = createHistoryButton("Нет", new Color(185, 65, 65));
-
-        yesButton.setPreferredSize(new Dimension(120, 42));
-        noButton.setPreferredSize(new Dimension(120, 42));
-
-        yesButton.addActionListener(e -> {
-            result[0] = true;
-            dialog.dispose();
-        });
-
-        noButton.addActionListener(e -> dialog.dispose());
-
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
-
-        buttons.setOpaque(false);
-
-        buttons.add(yesButton);
-        buttons.add(noButton);
-
-        main.add(center, BorderLayout.CENTER);
-        main.add(buttons, BorderLayout.SOUTH);
-
-        dialog.setContentPane(main);
-
-        dialog.setVisible(true);
-
-        return result[0];
+            System.out.printf(
+                "dt = %.4f | Дальность = %.2f м | Макс. высота = %.2f м | Конечная скорость = %.2f м/с%n",
+                dt,
+                r.distance,
+                r.maxHeight,
+                r.finalSpeed
+            );
+        }
     }
 
     static class PlotPanel extends JPanel {
@@ -1029,5 +707,25 @@ public class FlightSimulatorApp extends JFrame {
                 this.label = label;
             }
         }
+    }
+
+    // public static void main(String[] args) {
+    //     SwingUtilities.invokeLater(() -> {
+    //         String method = args.length > 0 ? args[0] : "euler";
+
+    //         FlightPhysics physics = FlightPhysicsPlugin.getPlugin(method);
+
+    //         FlightSimulatorApp app = new FlightSimulatorApp(physics);
+    //         app.setVisible(true);
+    //     });
+    // }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            DatabaseManager.initDatabase();
+
+            LoginWindow loginWindow = new LoginWindow();
+            loginWindow.setVisible(true);
+        });
     }
 }

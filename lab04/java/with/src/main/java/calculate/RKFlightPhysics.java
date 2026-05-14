@@ -1,19 +1,23 @@
-package core;
+package calculate;
 
+import core.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EulerFlightPhysics extends FlightPhysics {
+public class RKFlightPhysics extends FlightPhysics {
 
     private static final double G = 9.81;
 
     @Override
     public String getName() {
-        return "Метод Эйлера";
+        return "Метод Рунге-Кутта 2-го порядка";
     }
 
     @Override
     public SimulationResult simulate(FlightParams p) {
+        int steps = 0;
+        int maxSteps = 1_000_000;
+
         double x = 0.0;
         double y = p.y0;
 
@@ -29,7 +33,8 @@ public class EulerFlightPhysics extends FlightPhysics {
 
         double maxHeight = p.y0;
 
-        while (y >= 0) {
+        while (y >= 0 && steps < maxSteps) {
+            steps++;
             double xPrev = x;
             double yPrev = y;
 
@@ -37,16 +42,29 @@ public class EulerFlightPhysics extends FlightPhysics {
 
             double rho = p.rho0 * Math.exp(-y / p.H);
 
-            double drag = (p.k * (rho / p.rho0)) / p.m;
+            double drag = ((p.k * rho) / p.rho0) / p.m;
 
             double ax = -drag * v * vx;
             double ay = -G - drag * v * vy;
 
-            x += vx * p.dt;
-            y += vy * p.dt;
+            double vxMid = vx + (ax * p.dt) / 2.0;
+            double vyMid = vy + (ay * p.dt) / 2.0;
 
-            vx += ax * p.dt;
-            vy += ay * p.dt;
+            double yMid = y + (vy * p.dt) / 2.0;
+
+            double rhoMid = p.rho0 * Math.exp(-yMid / p.H);
+            double dragMid = ((p.k * rhoMid) / p.rho0) / p.m;
+
+            double vMid = Math.sqrt(vxMid * vxMid + vyMid * vyMid);
+
+            double axMid = -dragMid * vMid * vxMid;
+            double ayMid = -G - dragMid * vMid * vyMid;
+
+            x += vxMid * p.dt;
+            y += vyMid * p.dt;
+
+            vx += axMid * p.dt;
+            vy += ayMid * p.dt;
 
             if (y < 0) {
                 double r = yPrev / (yPrev - y);
